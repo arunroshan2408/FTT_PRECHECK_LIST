@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FTT Pre-Trade Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c0f;--surface:#111418;--surface2:#181c22;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0f2f5;--muted:#6b7280;--muted2:#9ca3af;
+  --buy:#22c55e;--buy-bg:rgba(34,197,94,0.08);--buy-border:rgba(34,197,94,0.25);
+  --sell:#ef4444;--sell-bg:rgba(239,68,68,0.08);--sell-border:rgba(239,68,68,0.25);
+  --gold:#f59e0b;--gold-bg:rgba(245,158,11,0.09);--gold-border:rgba(245,158,11,0.3);
+  --auto:#818cf8;--auto-bg:rgba(129,140,248,0.09);--auto-border:rgba(129,140,248,0.28);
+  --r:10px;--rl:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;padding:0 0 130px;}
+
+/* HEADER */
+.header{padding:14px 16px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100;}
+.header-row1{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.brand{display:flex;align-items:center;gap:9px;}
+.brand-icon{width:32px;height:32px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#000;flex-shrink:0;}
+.brand-name{font-size:15px;font-weight:800;letter-spacing:-0.02em;}
+.brand-sub{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:0.07em;text-transform:uppercase;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.time-badge{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted2);background:var(--surface);border:1px solid var(--border);padding:4px 8px;border-radius:5px;}
+.settings-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--muted2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;}
+.settings-btn:active{opacity:0.7;}
+
+/* SESSION TICKER — above tabs */
+.session-ticker{padding:8px 12px;border-radius:var(--r);border:1px solid var(--border);display:flex;align-items:center;gap:10px;margin-bottom:10px;transition:all 0.3s;}
+.session-ticker.valid{background:var(--buy-bg);border-color:var(--buy-border);}
+.session-ticker.blocked{background:var(--sell-bg);border-color:var(--sell-border);}
+.session-ticker.dead{background:var(--surface);border-color:var(--border2);}
+.ticker-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.session-ticker.valid .ticker-dot{background:var(--buy);animation:blink 1.4s infinite;}
+.session-ticker.blocked .ticker-dot{background:var(--sell);animation:blink 0.7s infinite;}
+.session-ticker.dead .ticker-dot{background:var(--muted);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.ticker-main{flex:1;min-width:0;}
+.ticker-zone{font-size:11px;font-weight:700;letter-spacing:0.06em;font-family:'Space Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.session-ticker.valid .ticker-zone{color:var(--buy);}
+.session-ticker.blocked .ticker-zone{color:var(--sell);}
+.session-ticker.dead .ticker-zone{color:var(--muted2);}
+.ticker-detail{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:1px;}
+.ticker-cd{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--muted2);flex-shrink:0;}
+
+/* TABS */
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tab-btn{padding:10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.tab-btn.buy.active{background:var(--buy-bg);border-color:var(--buy-border);color:var(--buy);}
+.tab-btn.sell.active{background:var(--sell-bg);border-color:var(--sell-border);color:var(--sell);}
+
+/* CONTENT */
+.content{padding:14px 16px 0;}
+
+/* SCORE */
+.score-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:13px 15px;margin-bottom:14px;}
+.score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;}
+.score-label{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;}
+.score-frac{font-family:'Space Mono',monospace;font-size:13px;font-weight:700;}
+.bar-bg{height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;margin-bottom:11px;}
+.bar-fill{height:100%;border-radius:99px;transition:width 0.35s cubic-bezier(0.4,0,0.2,1),background 0.2s;width:0%;}
+.verdict{padding:9px 13px;border-radius:var(--r);font-size:11px;font-weight:600;text-align:center;border:1px solid var(--border);color:var(--muted2);background:var(--surface2);font-family:'Space Mono',monospace;letter-spacing:0.02em;transition:all 0.25s;line-height:1.6;}
+.verdict.rb{background:var(--buy-bg);border-color:var(--buy-border);color:var(--buy);}
+.verdict.rs{background:var(--sell-bg);border-color:var(--sell-border);color:var(--sell);}
+.verdict.partial{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold);}
+.verdict.blk{background:var(--sell-bg);border-color:var(--sell-border);color:var(--sell);}
+.verdict.dead{background:var(--surface);border-color:var(--border2);color:var(--muted);}
+
+/* SECTIONS */
+.section{margin-bottom:18px;}
+.sec-label{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:7px;padding-left:2px;display:flex;align-items:center;gap:6px;}
+.auto-badge{background:var(--auto-bg);color:var(--auto);border:1px solid var(--auto-border);font-size:7px;padding:2px 5px;border-radius:3px;letter-spacing:0.08em;font-weight:700;}
+
+/* CHECK ITEMS */
+.check-item{display:flex;align-items:flex-start;gap:11px;padding:11px 13px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);margin-bottom:5px;cursor:pointer;transition:all 0.15s;-webkit-user-select:none;user-select:none;}
+.check-item:active{transform:scale(0.985);}
+.check-item.cb{background:var(--buy-bg);border-color:var(--buy-border);}
+.check-item.cs{background:var(--sell-bg);border-color:var(--sell-border);}
+.check-item.ap{background:var(--auto-bg);border-color:var(--auto-border);cursor:default;}
+.check-item.ap:active{transform:none;}
+.check-item.ab{background:var(--sell-bg);border-color:var(--sell-border);cursor:default;}
+.check-item.ab:active{transform:none;}
+.check-item.lk{opacity:0.25;pointer-events:none;}
+.cbox{width:21px;height:21px;border-radius:5px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all 0.15s;font-size:11px;}
+.check-item.cb .cbox{background:var(--buy);border-color:var(--buy);}
+.check-item.cs .cbox{background:var(--sell);border-color:var(--sell);}
+.check-item.ap .cbox{background:var(--auto);border-color:var(--auto);}
+.check-item.ab .cbox{background:var(--sell);border-color:var(--sell);color:#fff;}
+.tk{display:none;width:11px;height:11px;}
+.check-item.cb .tk,.check-item.cs .tk,.check-item.ap .tk{display:block;}
+.ct{flex:1;}
+.ctitle{font-size:12px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px;}
+.check-item.ap .ctitle{color:var(--auto);}
+.check-item.ab .ctitle{color:var(--sell);}
+.cdesc{font-size:10px;color:var(--muted2);line-height:1.5;font-family:'Space Mono',monospace;}
+
+/* PSYCHOLOGY CARDS */
+.psych-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;margin-bottom:5px;}
+.psych-q{font-size:12px;font-weight:700;color:var(--text);margin-bottom:9px;}
+.psych-opts{display:flex;gap:6px;flex-wrap:wrap;}
+.popt{flex:1;min-width:70px;padding:8px 6px;border-radius:7px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center;}
+.popt:active{transform:scale(0.97);}
+.popt.sel-win{background:var(--buy-bg);border-color:var(--buy-border);color:var(--buy);}
+.popt.sel-loss{background:var(--sell-bg);border-color:var(--sell-border);color:var(--sell);}
+.popt.sel-first{background:var(--auto-bg);border-color:var(--auto-border);color:var(--auto);}
+.popt.sel-yes{background:var(--buy-bg);border-color:var(--buy-border);color:var(--buy);}
+.popt.sel-no{background:var(--sell-bg);border-color:var(--sell-border);color:var(--sell);}
+.psych-warning{margin-top:9px;padding:9px 11px;border-radius:7px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);font-size:10px;color:var(--sell);font-family:'Space Mono',monospace;line-height:1.5;}
+
+/* BOTTOM BAR */
+.bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;padding:10px 16px 22px;background:linear-gradient(to top,var(--bg) 70%,transparent);display:flex;gap:8px;}
+.reset-btn{flex:1;padding:12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.reset-btn:active{opacity:0.7;transform:scale(0.98);}
+.trade-btn{flex:2;padding:12px;border-radius:var(--r);border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;cursor:pointer;letter-spacing:0.03em;transition:all 0.18s;opacity:0.3;pointer-events:none;}
+.trade-btn.bb{background:var(--buy);color:#000;}
+.trade-btn.sb{background:var(--sell);color:#fff;}
+.trade-btn.on{opacity:1;pointer-events:all;}
+.trade-btn.on:active{transform:scale(0.97);}
+@keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}50%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
+@keyframes pr{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.trade-btn.on.bb{animation:pg 2s infinite;}
+.trade-btn.on.sb{animation:pr 2s infinite;}
+
+/* SETTINGS MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl) var(--rl) 0 0;padding:20px 18px 32px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 18px;}
+.modal-title{font-size:16px;font-weight:800;margin-bottom:18px;letter-spacing:-0.01em;}
+.field-label{font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px;}
+.field-group{margin-bottom:14px;}
+.field-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;outline:none;transition:border-color 0.15s;}
+.field-input:focus{border-color:var(--gold);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-divider{border:none;border-top:1px solid var(--border);margin:18px 0;}
+.tpl-title{font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text);}
+.tpl-save-row{display:flex;gap:8px;margin-bottom:12px;}
+.tpl-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'Space Mono',monospace;font-size:12px;outline:none;}
+.tpl-input:focus{border-color:var(--gold);}
+.tpl-save-btn{padding:9px 14px;border-radius:8px;border:1px solid var(--gold-border);background:var(--gold-bg);color:var(--gold);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;}
+.tpl-list{display:flex;flex-direction:column;gap:6px;}
+.tpl-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);}
+.tpl-name{flex:1;font-size:12px;font-family:'Space Mono',monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tpl-load{padding:5px 10px;border-radius:6px;border:1px solid var(--auto-border);background:var(--auto-bg);color:var(--auto);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.tpl-del{padding:5px 8px;border-radius:6px;border:1px solid var(--sell-border);background:var(--sell-bg);color:var(--sell);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;}
+.tpl-empty{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;text-align:center;padding:14px 0;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;}
+.btn-cancel{flex:1;padding:12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-apply{flex:2;padding:12px;border-radius:var(--r);border:none;background:var(--gold);color:#000;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-row1">
+    <div class="brand">
+      <div class="brand-icon" id="hdr-icon">FTT</div>
+      <div>
+        <div class="brand-name" id="hdr-name">FalconTrader</div>
+        <div class="brand-sub">Pre-Trade Checklist</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="time-badge" id="clock">--:--:-- IST</div>
+      <div class="settings-btn" onclick="openSettings()" title="Settings">&#9881;</div>
+    </div>
+  </div>
+
+  <!-- SESSION TICKER above tabs -->
+  <div id="sess-ticker" class="session-ticker dead">
+    <div class="ticker-dot"></div>
+    <div class="ticker-main">
+      <div class="ticker-zone" id="t-zone">DETECTING...</div>
+      <div class="ticker-detail" id="t-detail">Reading IST time</div>
+    </div>
+    <div class="ticker-cd" id="t-cd"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn buy active" onclick="switchTab('buy')">&#8593; BUY Setup</button>
+    <button class="tab-btn sell" onclick="switchTab('sell')">&#8595; SELL Setup</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+  <div class="score-panel">
+    <div class="score-row">
+      <span class="score-label">CHECKS PASSED</span>
+      <span class="score-frac" id="score-num">0 / 0</span>
+    </div>
+    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+    <div class="verdict" id="verdict">Waiting for session...</div>
+  </div>
+  <div id="checklist"></div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button class="reset-btn" onclick="resetAll()">&#8635; Reset</button>
+  <button class="trade-btn bb" id="trade-btn">NOT READY</button>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeIfOutside(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">&#9881; Settings</div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Brand Name</div>
+        <input class="field-input" id="s-name" type="text" placeholder="FalconTrader" maxlength="20">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Logo Text</div>
+        <input class="field-input" id="s-icon" type="text" placeholder="FTT" maxlength="4">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <div class="field-label">Max Lot Size</div>
+        <input class="field-input" id="s-lot" type="number" min="1" max="10" step="1" placeholder="1">
+      </div>
+      <div class="field-group">
+        <div class="field-label">Daily Loss Limit $</div>
+        <input class="field-input" id="s-dloss" type="number" min="50" step="25" placeholder="300">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Max SL Risk per Trade $</div>
+      <input class="field-input" id="s-slrisk" type="number" min="25" step="25" placeholder="150">
+    </div>
+
+    <hr class="modal-divider">
+    <div class="tpl-title">&#128190; Saved Templates</div>
+
+    <div class="tpl-save-row">
+      <input class="tpl-input" id="tpl-name-input" type="text" placeholder="Template name..." maxlength="20">
+      <button class="tpl-save-btn" onclick="saveTemplate()">Save</button>
+    </div>
+
+    <div class="tpl-list" id="tpl-list"></div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-apply" onclick="applySettings()">Apply Settings</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DEFAULTS & STORAGE ───────────────────────────────────────────────────
+const DEF={brandName:'FalconTrader',brandIcon:'FTT',maxLot:1,dailyLoss:300,maxSLRisk:150};
+let cfg=loadCfg();
+
+function loadCfg(){try{return Object.assign({},DEF,JSON.parse(localStorage.getItem('ftt_cfg')));}catch(e){return{...DEF};}}
+function saveCfg(){localStorage.setItem('ftt_cfg',JSON.stringify(cfg));}
+function loadTpls(){try{return JSON.parse(localStorage.getItem('ftt_tpls'))||[];}catch(e){return[];}}
+function saveTpls(t){localStorage.setItem('ftt_tpls',JSON.stringify(t));}
+
+// ── SESSION WINDOWS (IST minutes) ────────────────────────────────────────
+function toM(h,m){return h*60+m;}
+const WINS=[
+  {start:toM(12,30),end:toM(13,30),zone:'valid',label:'LONDON APPROACH',detail:'Pre-London continuation window'},
+  {start:toM(14,0), end:toM(17,30),zone:'valid',label:'LONDON CONTINUATION',detail:'Post-open continuation active'},
+  {start:toM(19,30),end:toM(21,30),zone:'valid',label:'NY SESSION',detail:'After NY opening hour — safe'},
+  {start:toM(13,30),end:toM(14,0), zone:'blocked',label:'LONDON OPEN — BLOCKED',detail:'First 30 min. Stop hunt zone.'},
+  {start:toM(18,30),end:toM(19,30),zone:'blocked',label:'NY OPEN — BLOCKED',detail:'First 60 min. Liquidity hunt zone.'},
+];
+
+function getISTmin(){
+  const ist=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  return ist.getHours()*60+ist.getMinutes();
+}
+
+function getSess(){
+  const min=getISTmin();
+  for(const w of WINS) if(min>=w.start&&min<w.end) return{...w,remaining:w.end-min};
+  let next=null,gap=Infinity;
+  for(const w of WINS){let d=w.start-min;if(d<0)d+=1440;if(d<gap){gap=d;next=w;}}
+  return{zone:'dead',label:'OUTSIDE TRADING HOURS',detail:next?'Next: '+next.label:'No session soon',remaining:gap};
+}
+
+function fmt(m){const h=Math.floor(m/60),r=m%60;return h>0?h+'h '+r+'m':r+'m';}
+
+// ── STATE ────────────────────────────────────────────────────────────────
+let tab='buy';
+let state={buy:{},sell:{}};
+let psych={lastTrade:null,dailyOk:null}; // 'win'|'loss'|'first', true|false
+let sess={zone:'dead'};
+
+// ── CHECKS DATA ──────────────────────────────────────────────────────────
+function getChecks(t){
+  const isBuy=t==='buy';
+  return[
+    {section:"Bias & Direction",items:[
+      {id:"bias1",title:"Price "+(isBuy?"above":"below")+" VWAP",desc:"No "+(isBuy?"buy":"sell")+" if price is "+(isBuy?"below":"above")+" VWAP — period"},
+      {id:"bias2",title:"Price "+(isBuy?"above":"below")+" 5M EMA",desc:"5M EMA acting as dynamic "+(isBuy?"support":"resistance")},
+      {id:"bias3",title:"HTF structure "+(isBuy?"bullish":"bearish"),desc:"15M showing "+(isBuy?"HH/HL":"LH/LL")+" — not fighting the trend"},
+      {id:"bias4",title:"Dashboard = "+(isBuy?"BUY / MOM BUY":"SELL / BEARISH"),desc:"Your own signal agrees. NO TRADE signal = skip"}
+    ]},
+    {section:"Key Levels",items:[
+      {id:"lvl1",title:"Near "+(isBuy?"demand":"supply")+" zone",desc:isBuy?"Any strong reaction level nearby — Tokyo High/Low / London High/Low / Prev Day High/Low / Prev Week High/Low acting as demand":"Any strong reaction level nearby — Tokyo High/Low / London High/Low / Prev Day High/Low / Prev Week High/Low acting as supply"},
+      {id:"lvl2",title:"No "+(isBuy?"resistance":"support")+" directly "+(isBuy?"above":"below"),desc:isBuy?"No strong level (High or Low) sitting immediately above — Tokyo/London/Prev Day/Prev Week blocking the move":"No strong level (High or Low) sitting immediately below — Tokyo/London/Prev Day/Prev Week blocking the fall"}
+    ]},
+    {section:"Entry Trigger",items:[
+      {id:"ent1",title:"Liquidity grab happened first",desc:"Stops swept "+(isBuy?"below":"above")+" — don't enter the very first push"},
+      {id:"ent2",title:"1M candle closed — not wick",desc:"Entry on closed candle only. Wick touch = skip."}
+    ]},
+    {section:"Risk Management",items:[
+      {id:"risk1",title:"SL at swing structure within $"+cfg.maxSLRisk,desc:"SL "+(isBuy?"below last swing low":"above last swing high")+" and total risk within your limit"},
+      {id:"risk2",title:"Lot = "+cfg.maxLot+" contract"+(cfg.maxLot>1?"s":"")+" only",desc:"Fixed lot size. No exceptions even if very confident."}
+    ]}
+  ];
+}
+
+// ── PSYCHOLOGY RENDER ────────────────────────────────────────────────────
+function psychHTML(isValid){
+  const lock=!isValid;
+  let h=`<div class="section"><div class="sec-label">Psychology</div>`;
+
+  // Q1: last trade
+  h+=`<div class="psych-card" style="${lock?'opacity:0.25;pointer-events:none':''}">
+    <div class="psych-q">Did you lose your last trade?</div>
+    <div class="psych-opts">
+      <button class="popt ${psych.lastTrade==='win'?'sel-win':''}" onclick="setPsych('lastTrade','win')">WIN &#9650;</button>
+      <button class="popt ${psych.lastTrade==='loss'?'sel-loss':''}" onclick="setPsych('lastTrade','loss')">LOSS &#9660;</button>
+      <button class="popt ${psych.lastTrade==='first'?'sel-first':''}" onclick="setPsych('lastTrade','first')">FIRST TRADE</button>
+    </div>`;
+  if(psych.lastTrade==='loss'){
+    h+=`<div class="psych-warning">&#9888; Revenge risk detected. You must wait at least 15 minutes after a loss before entering.<br><br>
+      <div class="check-item ${state[tab]['p_wait']?'c'+tab[0]:''}" onclick="toggle('p_wait')" style="margin-top:8px;background:transparent;border-color:rgba(239,68,68,0.25);">
+        <div class="cbox"><svg class="tk" viewBox="0 0 11 11" fill="none"><polyline points="2,5.5 4.5,8.5 9,2.5" stroke="${tab==='buy'?'#000':'#fff'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="ct"><div class="ctitle" style="font-size:11px;color:var(--sell);">I have waited 15 minutes — confirmed</div></div>
+      </div>
+    </div>`;
+  }
+  h+=`</div>`;
+
+  // Q2: daily loss
+  const limitLabel='$'+cfg.dailyLoss+' limit';
+  h+=`<div class="psych-card" style="${lock?'opacity:0.25;pointer-events:none':''}">
+    <div class="psych-q">P&amp;L today — within <span style="color:var(--gold)">${limitLabel}</span>?</div>
+    <div class="psych-opts">
+      <button class="popt ${psych.dailyOk===true?'sel-yes':''}" onclick="setPsych('dailyOk',true)">YES — within limit</button>
+      <button class="popt ${psych.dailyOk===false?'sel-no':''}" onclick="setPsych('dailyOk',false)">NO — limit hit</button>
+    </div>
+    ${psych.dailyOk===false?'<div class="psych-warning" style="margin-top:9px;">Daily loss limit hit. Screen off. No more trades today.</div>':''}
+  </div>`;
+
+  h+=`</div>`;
+  return h;
+}
+
+// ── TOGGLE ───────────────────────────────────────────────────────────────
+function toggle(id){
+  if(sess.zone!=='valid')return;
+  state[tab][id]=!state[tab][id];
+  render();
+}
+
+function setPsych(key,val){
+  if(sess.zone!=='valid')return;
+  psych[key]=psych[key]===val?null:val;
+  if(key==='lastTrade'&&val!=='loss') delete state[tab]['p_wait'];
+  render();
+}
+
+function resetAll(){
+  state[tab]={};
+  psych={lastTrade:null,dailyOk:null};
+  render();
+}
+
+function switchTab(t){
+  tab=t;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.tab-btn.'+t).classList.add('active');
+  render();
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────
+function render(){
+  const isValid=sess.zone==='valid';
+  const isBlocked=sess.zone==='blocked';
+  const checks=getChecks(tab);
+  let html='';
+
+  // Auto session section
+  html+=`<div class="section"><div class="sec-label">Session &amp; Timing <span class="auto-badge">AUTO</span></div>`;
+  if(isValid){
+    html+=`<div class="check-item ap">
+      <div class="cbox"><svg class="tk" viewBox="0 0 11 11" fill="none" style="display:block"><polyline points="2,5.5 4.5,8.5 9,2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="ct"><div class="ctitle">Session window active &#10003;</div><div class="cdesc">${sess.label} — closes in ${fmt(sess.remaining)}</div></div>
+    </div>
+    <div class="check-item ap">
+      <div class="cbox"><svg class="tk" viewBox="0 0 11 11" fill="none" style="display:block"><polyline points="2,5.5 4.5,8.5 9,2.5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="ct"><div class="ctitle">Not in opening hour &#10003;</div><div class="cdesc">Danger zone cleared. Safe to trade.</div></div>
+    </div>`;
+  } else if(isBlocked){
+    html+=`<div class="check-item ab">
+      <div class="cbox" style="color:#fff;">&#10005;</div>
+      <div class="ct"><div class="ctitle">${sess.label}</div><div class="cdesc">${sess.detail} Clears in ${fmt(sess.remaining)}.</div></div>
+    </div>`;
+  } else {
+    html+=`<div class="check-item" style="cursor:default;opacity:0.4;">
+      <div class="cbox" style="color:var(--muted);">&ndash;</div>
+      <div class="ct"><div class="ctitle" style="color:var(--muted2);">Outside trading hours</div><div class="cdesc">${sess.detail}. Opens in ${fmt(sess.remaining)}.</div></div>
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Manual checks
+  let total=2,passed=isValid?2:0;
+
+  // Psychology passes
+  const psychPassed=psychScore();
+  total+=psychPassed.total;
+  passed+=psychPassed.passed;
+
+  checks.forEach(s=>{
+    html+=`<div class="section"><div class="sec-label">${s.section}</div>`;
+    s.items.forEach(item=>{
+      total++;
+      const checked=isValid&&!!state[tab][item.id];
+      if(checked)passed++;
+      const lk=!isValid?'lk':'';
+      const col=tab==='buy'?'cb':'cs';
+      html+=`<div class="check-item ${checked?col:''} ${lk}" onclick="toggle('${item.id}')">
+        <div class="cbox"><svg class="tk" viewBox="0 0 11 11" fill="none"><polyline points="2,5.5 4.5,8.5 9,2.5" stroke="${tab==='buy'?'#000':'#fff'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="ct"><div class="ctitle">${item.title}</div><div class="cdesc">${item.desc}</div></div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+
+  html+=psychHTML(isValid);
+
+  document.getElementById('checklist').innerHTML=html;
+
+  // Score bar
+  const pct=total>0?Math.round(passed/total*100):0;
+  document.getElementById('score-num').textContent=passed+' / '+total;
+  const bar=document.getElementById('bar');
+  bar.style.width=pct+'%';
+  bar.style.background=tab==='buy'
+    ?`hsl(${Math.round(142*pct/100)},68%,48%)`
+    :(pct===100?'#ef4444':`hsl(${Math.round(pct*0.1)},68%,52%)`);
+
+  // Verdict + button
+  const vEl=document.getElementById('verdict');
+  const btn=document.getElementById('trade-btn');
+  btn.className='trade-btn '+(tab==='buy'?'bb':'sb');
+
+  if(psych.dailyOk===false){
+    vEl.className='verdict blk';
+    vEl.textContent='Daily loss limit hit. Screen off. Done for today.';
+    btn.textContent='DAILY LIMIT HIT';
+  } else if(isBlocked){
+    vEl.className='verdict blk';
+    vEl.textContent='BLOCKED — '+sess.label+'. Wait '+fmt(sess.remaining)+'.';
+    btn.textContent='SESSION BLOCKED';
+  } else if(!isValid){
+    vEl.className='verdict dead';
+    vEl.textContent='Outside trading hours. Next window in '+fmt(sess.remaining)+'.';
+    btn.textContent='NO ACTIVE SESSION';
+  } else if(passed===total&&total>0){
+    vEl.className='verdict '+(tab==='buy'?'rb':'rs');
+    vEl.textContent=(tab==='buy'?'ALL CLEAR — BUY confirmed.':'ALL CLEAR — SELL confirmed.')+' '+cfg.maxLot+' contract. SL set.';
+    btn.className='trade-btn '+(tab==='buy'?'bb':'sb')+' on';
+    btn.textContent=tab==='buy'?'ALL CLEAR — ENTER BUY':'ALL CLEAR — ENTER SELL';
+  } else if(pct>=60){
+    vEl.className='verdict partial';
+    vEl.textContent=(total-passed)+' check'+(total-passed>1?'s':'')+' missing — do not enter yet.';
+    btn.textContent=(total-passed)+' CHECKS MISSING';
+  } else {
+    vEl.className='verdict';
+    vEl.textContent='Tick all checks before entering a trade.';
+    btn.textContent='NOT READY';
+  }
+}
+
+function psychScore(){
+  let total=0,passed=0;
+  // Q1: last trade
+  total++;
+  if(psych.lastTrade==='win'||psych.lastTrade==='first') passed++;
+  else if(psych.lastTrade==='loss'){
+    total++; // extra check: waited 15 min
+    if(state[tab]['p_wait']) passed++;
+  }
+  // Q2: daily loss
+  total++;
+  if(psych.dailyOk===true) passed++;
+  return{total,passed};
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('s-name').value=cfg.brandName;
+  document.getElementById('s-icon').value=cfg.brandIcon;
+  document.getElementById('s-lot').value=cfg.maxLot;
+  document.getElementById('s-dloss').value=cfg.dailyLoss;
+  document.getElementById('s-slrisk').value=cfg.maxSLRisk;
+  renderTplList();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeSettings(){document.getElementById('modal').classList.remove('open');}
+
+function closeIfOutside(e){if(e.target===document.getElementById('modal'))closeSettings();}
+
+function applySettings(){
+  cfg.brandName=document.getElementById('s-name').value.trim()||'FalconTrader';
+  cfg.brandIcon=document.getElementById('s-icon').value.trim().toUpperCase()||'FTT';
+  cfg.maxLot=Math.max(1,parseInt(document.getElementById('s-lot').value)||1);
+  cfg.dailyLoss=Math.max(50,parseInt(document.getElementById('s-dloss').value)||300);
+  cfg.maxSLRisk=Math.max(25,parseInt(document.getElementById('s-slrisk').value)||150);
+  saveCfg();
+  applyBrand();
+  closeSettings();
+  render();
+}
+
+function applyBrand(){
+  document.getElementById('hdr-name').textContent=cfg.brandName;
+  document.getElementById('hdr-icon').textContent=cfg.brandIcon;
+  document.title=cfg.brandName+' — Pre-Trade Checklist';
+}
+
+// ── TEMPLATES ────────────────────────────────────────────────────────────
+function saveTemplate(){
+  const name=document.getElementById('tpl-name-input').value.trim();
+  if(!name)return;
+  const tpls=loadTpls();
+  // Pull current field values from modal
+  const t={
+    name,
+    brandName:document.getElementById('s-name').value.trim()||cfg.brandName,
+    brandIcon:document.getElementById('s-icon').value.trim().toUpperCase()||cfg.brandIcon,
+    maxLot:parseInt(document.getElementById('s-lot').value)||cfg.maxLot,
+    dailyLoss:parseInt(document.getElementById('s-dloss').value)||cfg.dailyLoss,
+    maxSLRisk:parseInt(document.getElementById('s-slrisk').value)||cfg.maxSLRisk,
+  };
+  // Max 5 templates
+  if(tpls.length>=5) tpls.shift();
+  tpls.push(t);
+  saveTpls(tpls);
+  document.getElementById('tpl-name-input').value='';
+  renderTplList();
+}
+
+function loadTemplate(idx){
+  const tpls=loadTpls();
+  const t=tpls[idx];
+  if(!t)return;
+  document.getElementById('s-name').value=t.brandName;
+  document.getElementById('s-icon').value=t.brandIcon;
+  document.getElementById('s-lot').value=t.maxLot;
+  document.getElementById('s-dloss').value=t.dailyLoss;
+  document.getElementById('s-slrisk').value=t.maxSLRisk;
+}
+
+function deleteTemplate(idx){
+  const tpls=loadTpls();
+  tpls.splice(idx,1);
+  saveTpls(tpls);
+  renderTplList();
+}
+
+function renderTplList(){
+  const tpls=loadTpls();
+  const el=document.getElementById('tpl-list');
+  if(!tpls.length){
+    el.innerHTML='<div class="tpl-empty">No saved templates yet. Save one above.</div>';
+    return;
+  }
+  el.innerHTML=tpls.map((t,i)=>`
+    <div class="tpl-item">
+      <div class="tpl-name">${t.name}<span style="color:var(--muted);font-size:9px;display:block;margin-top:2px;">${t.brandName} | Lot:${t.maxLot} | SL:$${t.maxSLRisk} | DL:$${t.dailyLoss}</span></div>
+      <button class="tpl-load" onclick="loadTemplate(${i})">Load</button>
+      <button class="tpl-del" onclick="deleteTemplate(${i})">&#10005;</button>
+    </div>`).join('');
+}
+
+// ── SESSION TICKER UPDATE ─────────────────────────────────────────────────
+function updateTicker(s){
+  const el=document.getElementById('sess-ticker');
+  el.className='session-ticker '+s.zone;
+  document.getElementById('t-zone').textContent=s.label;
+  document.getElementById('t-detail').textContent=s.detail;
+  const cd=document.getElementById('t-cd');
+  if(s.zone==='valid') cd.textContent=fmt(s.remaining)+' left';
+  else cd.textContent='in '+fmt(s.remaining);
+}
+
+// ── CLOCK TICK ────────────────────────────────────────────────────────────
+function tick(){
+  const ist=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  const h=String(ist.getHours()).padStart(2,'0');
+  const m=String(ist.getMinutes()).padStart(2,'0');
+  const s=String(ist.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent=h+':'+m+':'+s+' IST';
+
+  const ns=getSess();
+  const zc=ns.zone!==sess.zone;
+  sess=ns;
+  updateTicker(sess);
+
+  if(zc){state={buy:{},sell:{}};psych={lastTrade:null,dailyOk:null};render();}
+  else if(parseInt(s)===0){render();}
+
+  // Live verdict update for blocked/dead countdown
+  if(sess.zone==='blocked'||sess.zone==='dead'){
+    const vEl=document.getElementById('verdict');
+    if(sess.zone==='blocked') vEl.textContent='BLOCKED — '+sess.label+'. Wait '+fmt(sess.remaining)+'.';
+    else if(psych.dailyOk!==false) vEl.textContent='Outside trading hours. Next window in '+fmt(sess.remaining)+'.';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+applyBrand();
+tick();
+setInterval(tick,1000);
+</script>
+</body>
+</html>
