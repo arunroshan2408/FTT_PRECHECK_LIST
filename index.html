@@ -4,6 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>FTT Pre-Trade Checklist</title>
+<meta name="theme-color" content="#f59e0b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FTT Check">
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" id="apple-icon">
+<script>
+// Generate icon canvas and inject manifest dynamically
+function buildPWA(brandIcon, brandName){
+  // Draw icon on canvas
+  const size=512;
+  const c=document.createElement('canvas');
+  c.width=c.height=size;
+  const ctx=c.getContext('2d');
+  // Background
+  ctx.fillStyle='#0a0c0f';
+  ctx.fillRect(0,0,size,size);
+  // Gold rounded rect
+  const pad=40,r=80;
+  ctx.beginPath();
+  ctx.moveTo(pad+r,pad);
+  ctx.lineTo(size-pad-r,pad);
+  ctx.arcTo(size-pad,pad,size-pad,pad+r,r);
+  ctx.lineTo(size-pad,size-pad-r);
+  ctx.arcTo(size-pad,size-pad,size-pad-r,size-pad,r);
+  ctx.lineTo(pad+r,size-pad);
+  ctx.arcTo(pad,size-pad,pad,size-pad-r,r);
+  ctx.lineTo(pad,pad+r);
+  ctx.arcTo(pad,pad,pad+r,pad,r);
+  ctx.closePath();
+  ctx.fillStyle='#f59e0b';
+  ctx.fill();
+  // Text
+  const txt=(brandIcon||'FTT').substring(0,4).toUpperCase();
+  ctx.fillStyle='#000000';
+  ctx.font='bold '+(txt.length>3?'130':'150')+'px "Space Mono",monospace';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText(txt,size/2,size/2+8);
+  const iconUrl=c.toDataURL('image/png');
+
+  // Apple touch icon
+  document.getElementById('apple-icon').href=iconUrl;
+
+  // Manifest
+  const manifest={
+    name:(brandName||'FalconTrader')+' Checklist',
+    short_name:'FTT Check',
+    description:'FTT Pre-Trade Decision Checklist',
+    start_url:'.',
+    display:'standalone',
+    orientation:'portrait',
+    background_color:'#0a0c0f',
+    theme_color:'#f59e0b',
+    icons:[
+      {src:iconUrl,sizes:'192x192',type:'image/png'},
+      {src:iconUrl,sizes:'512x512',type:'image/png',purpose:'any maskable'}
+    ]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const link=document.getElementById('pwa-manifest');
+  link.href=url;
+}
+window.addEventListener('DOMContentLoaded',()=>{
+  const cfg=JSON.parse(localStorage.getItem('ftt_cfg')||'{}');
+  buildPWA(cfg.brandIcon||'FTT',cfg.brandName||'FalconTrader');
+});
+// Rebuild icon when settings applied
+const _origApply=window.applySettings;
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -273,7 +345,7 @@ function toM(h,m){return h*60+m;}
 const WINS=[
   {start:toM(12,30),end:toM(13,30),zone:'valid',label:'LONDON APPROACH',detail:'Pre-London continuation window'},
   {start:toM(14,0), end:toM(17,30),zone:'valid',label:'LONDON CONTINUATION',detail:'Post-open continuation active'},
-  {start:toM(19,30),end:toM(21,30),zone:'valid',label:'NY SESSION',detail:'After NY opening hour — safe'},
+  {start:toM(19,30),end:toM(1,30), zone:'valid',label:'NY SESSION',detail:'NY proper: 19:30 – 01:30 IST',crossMidnight:true},
   {start:toM(13,30),end:toM(14,0), zone:'blocked',label:'LONDON OPEN — BLOCKED',detail:'First 30 min. Stop hunt zone.'},
   {start:toM(18,30),end:toM(19,30),zone:'blocked',label:'NY OPEN — BLOCKED',detail:'First 60 min. Liquidity hunt zone.'},
 ];
@@ -285,9 +357,24 @@ function getISTmin(){
 
 function getSess(){
   const min=getISTmin();
-  for(const w of WINS) if(min>=w.start&&min<w.end) return{...w,remaining:w.end-min};
+  for(const w of WINS){
+    if(w.crossMidnight){
+      // Window crosses midnight: active if min>=start OR min<end
+      if(min>=w.start||min<w.end){
+        const remaining=min>=w.start?(1440-min+w.end):(w.end-min);
+        return{...w,remaining};
+      }
+    } else {
+      if(min>=w.start&&min<w.end) return{...w,remaining:w.end-min};
+    }
+  }
+  // Dead zone — find nearest next window start
   let next=null,gap=Infinity;
-  for(const w of WINS){let d=w.start-min;if(d<0)d+=1440;if(d<gap){gap=d;next=w;}}
+  for(const w of WINS){
+    let d=w.start-min;
+    if(d<0)d+=1440;
+    if(d<gap){gap=d;next=w;}
+  }
   return{zone:'dead',label:'OUTSIDE TRADING HOURS',detail:next?'Next: '+next.label:'No session soon',remaining:gap};
 }
 
@@ -528,6 +615,7 @@ function applySettings(){
   cfg.maxSLRisk=Math.max(25,parseInt(document.getElementById('s-slrisk').value)||150);
   saveCfg();
   applyBrand();
+  rebuildPWAIcon();
   closeSettings();
   render();
 }
@@ -626,6 +714,12 @@ function tick(){
     if(sess.zone==='blocked') vEl.textContent='BLOCKED — '+sess.label+'. Wait '+fmt(sess.remaining)+'.';
     else if(psych.dailyOk!==false) vEl.textContent='Outside trading hours. Next window in '+fmt(sess.remaining)+'.';
   }
+}
+
+
+// PWA icon rebuild on settings change
+function rebuildPWAIcon(){
+  buildPWA(cfg.brandIcon, cfg.brandName);
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
