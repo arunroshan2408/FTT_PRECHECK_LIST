@@ -343,12 +343,42 @@ function saveTpls(t){localStorage.setItem('ftt_tpls',JSON.stringify(t));}
 // ── SESSION WINDOWS (IST minutes) ────────────────────────────────────────
 function toM(h,m){return h*60+m;}
 const WINS=[
-  {start:toM(12,30),end:toM(13,30),zone:'valid',label:'LONDON APPROACH',detail:'Pre-London continuation window'},
-  {start:toM(14,0), end:toM(17,30),zone:'valid',label:'LONDON CONTINUATION',detail:'Post-open continuation active'},
-  {start:toM(19,30),end:toM(1,30), zone:'valid',label:'NY SESSION',detail:'NY proper: 19:30 – 01:30 IST',crossMidnight:true},
-  {start:toM(13,30),end:toM(14,0), zone:'blocked',label:'LONDON OPEN — BLOCKED',detail:'First 30 min. Stop hunt zone.'},
-  {start:toM(18,30),end:toM(19,30),zone:'blocked',label:'NY OPEN — BLOCKED',detail:'First 60 min. Liquidity hunt zone.'},
+  // London windows (fixed — no DST effect on IST)
+  {start:toM(12,30),end:toM(13,30),zone:'valid',  label:'LONDON APPROACH',    detail:'Pre-London continuation window'},
+  {start:toM(14,0), end:toM(17,30),zone:'valid',  label:'LONDON CONTINUATION',detail:'Post-open continuation active'},
+  {start:toM(13,30),end:toM(14,0), zone:'blocked',label:'LONDON OPEN — BLOCKED',detail:'First 30 min of London. Stop hunt zone.'},
+
+  // NY windows — Summer (EDT, Mar–Nov): opens 17:30 IST | Winter (EST, Nov–Mar): opens 18:30 IST
+  // Danger zone: Summer 17:30–18:30 | Winter 18:30–19:30 (60 min after open)
+  // Valid window: Summer 18:30–02:30 | Winter 19:30–03:30 (crosses midnight both cases)
+  ...getNYWindows(),
 ];
+
+function getNYWindows(){
+  // Detect if US is on EDT (Summer) or EST (Winter) based on current month/date
+  // EDT: 2nd Sunday March → 1st Sunday November  |  EST: rest of year
+  const now=new Date();
+  const yr=now.getFullYear();
+  // 2nd Sunday of March
+  const mar=new Date(yr,2,1); mar.setDate(1+(7-mar.getDay())%7+7);
+  // 1st Sunday of November
+  const nov=new Date(yr,10,1); nov.setDate(1+(7-nov.getDay())%7);
+  const isEDT = now >= mar && now < nov; // US Summer time
+
+  if(isEDT){
+    // EDT: NY opens 17:30 IST, danger 17:30–18:30, valid 18:30–02:30
+    return[
+      {start:toM(17,30),end:toM(18,30),zone:'blocked',     label:'NY OPEN — BLOCKED (EDT)',  detail:'First 60 min of NY. Liquidity hunt zone.'},
+      {start:toM(18,30),end:toM(2,30), zone:'valid',crossMidnight:true,label:'NY SESSION (EDT)',detail:'Summer: 18:30 IST – 02:30 IST'},
+    ];
+  } else {
+    // EST: NY opens 18:30 IST, danger 18:30–19:30, valid 19:30–03:30
+    return[
+      {start:toM(18,30),end:toM(19,30),zone:'blocked',     label:'NY OPEN — BLOCKED (EST)',  detail:'First 60 min of NY. Liquidity hunt zone.'},
+      {start:toM(19,30),end:toM(3,30), zone:'valid',crossMidnight:true,label:'NY SESSION (EST)',detail:'Winter: 19:30 IST – 03:30 IST'},
+    ];
+  }
+}
 
 function getISTmin(){
   const ist=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
@@ -368,7 +398,7 @@ function getSess(){
       if(min>=w.start&&min<w.end) return{...w,remaining:w.end-min};
     }
   }
-  // Dead zone — find nearest next window start
+  // Dead zone — find nearest next window
   let next=null,gap=Infinity;
   for(const w of WINS){
     let d=w.start-min;
